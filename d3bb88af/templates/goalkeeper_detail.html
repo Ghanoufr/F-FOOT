@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% set active_page = 'goalkeepers' %}
+{% from "_macros.html" import avatar, ring, score_chip with context %}
+
+{% block title %}{{ goalkeeper.first_name }} {{ goalkeeper.last_name }} · {{ app_name }}{% endblock %}
+
+{% block content %}
+<section class="page-head">
+  <h1>{{ t('goalkeeper_profile') }}</h1>
+  <div class="row-actions">
+    <a class="btn btn-ghost" href="{{ url_for('goalkeepers_list') }}">{{ t('back') }}</a>
+    <a class="btn btn-ghost" href="{{ url_for('goalkeeper_edit', gid=goalkeeper.id) }}">{{ t('edit') }}</a>
+    <a class="btn btn-primary" href="{{ url_for('match_new') }}?goalkeeper_id={{ goalkeeper.id }}">+ {{ t('new_match') }}</a>
+    <form method="post" action="{{ url_for('goalkeeper_delete', gid=goalkeeper.id) }}" data-confirm="{{ t('confirm_delete') }}">
+      <button class="btn btn-danger" type="submit">{{ t('delete') }}</button>
+    </form>
+  </div>
+</section>
+
+<section class="card profile-card">
+  {{ avatar(goalkeeper, 96) }}
+  <div class="profile-info">
+    <h2>
+      {{ goalkeeper.first_name }} {{ goalkeeper.last_name }}
+      {% if goalkeeper.jersey_number is not none %}<span class="jersey">#{{ goalkeeper.jersey_number }}</span>{% endif %}
+    </h2>
+    <p class="muted">
+      {% if goalkeeper.nationality %}{{ goalkeeper.nationality }}{% endif %}
+      {% if goalkeeper.birth_date %}{{ ' · ' if goalkeeper.nationality }}{{ goalkeeper.birth_date }}{% endif %}
+    </p>
+  </div>
+  <div class="profile-scores">
+    <div class="profile-score">
+      {{ ring(goalkeeper.avg_score, 96, 9, goalkeeper.avg_score | score_color) }}
+      <span class="muted">{{ t('avg_score_label') }}</span>
+    </div>
+    <div class="profile-score">
+      <span class="big-value">{{ goalkeeper.best_score | round(1) if goalkeeper.best_score is not none else '—' }}</span>
+      <span class="muted">{{ t('best_score') }}</span>
+    </div>
+    <div class="profile-score">
+      <span class="big-value">{{ goalkeeper.match_count }}</span>
+      <span class="muted">{{ t('matches_evaluated') }}</span>
+    </div>
+  </div>
+</section>
+
+<section class="card">
+  <h2>{{ t('evaluations_history') }}</h2>
+  {% if matches %}
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>{{ t('date') }}</th>
+          <th>{{ t('opponent') }}</th>
+          <th>{{ t('competition') }}</th>
+          <th>{{ t('venue') }}</th>
+          <th>{{ t('score') }}</th>
+          <th>{{ t('actions') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in matches %}
+        <tr>
+          <td>{{ m.match_date }}</td>
+          <td>{{ m.opponent or '—' }}</td>
+          <td>{{ m.competition or '—' }}</td>
+          <td>{{ t('venue_home') if m.venue == 'home' else t('venue_away') }}</td>
+          <td>{{ score_chip(m.overall_score) }}</td>
+          <td class="cell-actions">
+            <a class="btn btn-ghost btn-sm" href="{{ url_for('match_result', mid=m.id) }}">{{ t('view') }}</a>
+            <a class="btn btn-ghost btn-sm" href="{{ url_for('match_edit', mid=m.id) }}">{{ t('edit') }}</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <p class="empty">{{ t('no_evaluations') }}</p>
+  {% endif %}
+</section>
+{% endblock %}

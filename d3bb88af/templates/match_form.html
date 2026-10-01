@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+{% set active_page = 'matches' %}
+
+{% block title %}{{ t('edit_match') if match else t('new_match') }} · {{ app_name }}{% endblock %}
+
+{% macro stat_input(name, value) %}
+  <div class="field">
+    <label for="{{ name }}">{{ t(name) }}</label>
+    <input id="{{ name }}" type="number" min="0" step="1" name="{{ name }}"
+           value="{{ value if value is not none else '' }}"
+           {% if name in ['crosses_successful', 'interventions_good', 'duels_won', 'passes_completed', 'commands_good', 'aerial_won', 'sweeper_successful', 'penalties_saved'] %}
+             data-max-of="{{ {'crosses_successful': 'crosses_attempted',
+                              'interventions_good': 'interventions_total',
+                              'duels_won': 'duels_total',
+                              'passes_completed': 'passes_attempted',
+                              'commands_good': 'commands_total',
+                              'aerial_won': 'aerial_total',
+                              'sweeper_successful': 'sweeper_total',
+                              'penalties_saved': 'penalties_faced'}[name] }}"
+           {% endif %}>
+  </div>
+{% endmacro %}
+
+{% block content %}
+<section class="page-head">
+  <h1>{{ t('edit_match') if match else t('new_match') }}</h1>
+  <a class="btn btn-ghost" href="{{ url_for('matches_list') }}">{{ t('cancel') }}</a>
+</section>
+
+<form class="form-card" method="post"
+      action="{{ url_for('match_edit', mid=match.id) if match else url_for('match_new') }}">
+
+  <section class="card">
+    <h2>{{ t('match_info') }}</h2>
+    <div class="form-grid">
+      <div class="field">
+        <label for="goalkeeper_id">{{ t('goalkeeper') }} *</label>
+        {% if goalkeepers %}
+          <select id="goalkeeper_id" name="goalkeeper_id" required>
+            {% for g in goalkeepers %}
+              <option value="{{ g.id }}"
+                {{ 'selected' if (match and match.goalkeeper_id == g.id) or (not match and request.args.get('goalkeeper_id') | int == g.id) }}>
+                {{ g.first_name }} {{ g.last_name }}
+              </option>
+            {% endfor %}
+          </select>
+        {% else %}
+          <p class="muted">{{ t('no_goalkeepers') }}
+            <a href="{{ url_for('goalkeeper_new') }}">{{ t('add_goalkeeper') }}</a></p>
+        {% endif %}
+      </div>
+      <div class="field">
+        <label for="match_date">{{ t('date') }}</label>
+        <input id="match_date" type="date" name="match_date"
+               value="{{ match.match_date if match else today }}">
+      </div>
+      <div class="field">
+        <label for="opponent">{{ t('opponent') }}</label>
+        <input id="opponent" type="text" name="opponent"
+               value="{{ match.opponent if match and match.opponent else '' }}">
+      </div>
+      <div class="field">
+        <label for="competition">{{ t('competition') }}</label>
+        <input id="competition" type="text" name="competition"
+               value="{{ match.competition if match and match.competition else '' }}">
+      </div>
+      <div class="field">
+        <label for="venue">{{ t('venue') }}</label>
+        <select id="venue" name="venue">
+          <option value="home" {{ 'selected' if not match or match.venue == 'home' }}>{{ t('venue_home') }}</option>
+          <option value="away" {{ 'selected' if match and match.venue == 'away' }}>{{ t('venue_away') }}</option>
+        </select>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>{{ t('statistics_title') }}</h2>
+    <p class="muted">{{ t('statistics_hint') }}</p>
+
+    <div class="grid grid-3">
+      <div class="cat-card">
+        <div class="cat-head"><h3>{{ t('cat_crosses') }}</h3><span class="weight-chip">{{ weights['crosses'] }}%</span></div>
+        <div class="form-grid">
+          {{ stat_input('crosses_attempted', match.crosses_attempted if match else none) }}
+          {{ stat_input('crosses_successful', match.crosses_successful if match else none) }}
+        </div>
+      </div>
+
+      <div class="cat-card">
+        <div class="cat-head"><h3>{{ t('cat_interventions') }}</h3><span class="weight-chip">{{ weights['interventions'] }}%</span></div>
+        <div class="form-grid">
+          {{ stat_input('interventions_total', match.interventions_total if match else none) }}
+          {{ stat_input('interventions_good', match.interventions_good if match else none) }}
+        </div>
+      </div>
+
+      <div class="cat-card">
+        <div class="cat-head"><h3>{{ t('cat_duels') }}</h3><span class="weight-chip">{{ weights['duels'] }}%</span></div>
+        <div class="form-grid">
+          {{ stat_input('duels_total', match.duels_total if match else none) }}
+          {{ stat_input('duels_won', match.duels_won if match else none) }}
+        </div>
+      </div>
+
+      <div class="cat-card">
+        <div class="cat-head"><h3>{{ t('cat_saves') }}</h3><span class="weight-chip">{{ weights['saves'] }}%</span></div>
+        <div class="form-grid">
+          {{ stat_input('saves', match.saves if match else none) }}
+          {{ stat_input('goals_conceded', match.goals_conceded if match else none) }}
+        </div>
+      </div>
+
+      <div class="cat-card">
+        <div class="cat-head"><h3>{{ t('cat_distribution') }}</h3><span class="weight-chip">{{ weights['distribution'] }}%</span></div>
+        <div class="form-grid">
+          {{ stat_input('passes_attempted', match.passes_attempted if match else none) }}
+          {{ stat_input('passes_completed', match.passes_completed if match else none) }}
+        </div>
+      </div>
+
+      <div class="cat-card">
+        <div class="cat-head"><h3>{{ t('cat_command') }}</h3><span class="weight-chip">{{ weights['command'] }}%</span></div>
+        <div class="form-grid">
+          {{ stat_input('commands_total', match.commands_total if match else none) }}
+          {{ stat_input('commands_good', match.commands_good if match else none) }}
+        </div>
+      </div>
+
+      <div class="cat-card">
+        <div class="cat-head"><h3>{{ t('cat_aerial') }}</h3><span class="weight-chip">{{ weights['aerial'] }}%</span></div>
+        <div class="form-grid">
+          {{ stat_input('aerial_total', match.aerial_total if match else none) }}
+          {{ stat_input('aerial_won', match.aerial_won if match else none) }}
+        </div>
+      </div>
+
+      <div class="cat-card">
+        <div class="cat-head"><h3>{{ t('cat_sweeper') }}</h3><span class="weight-chip">{{ weights['sweeper'] }}%</span></div>
+        <div class="form-grid">
+          {{ stat_input('sweeper_total', match.sweeper_total if match else none) }}
+          {{ stat_input('sweeper_successful', match.sweeper_successful if match else none) }}
+        </div>
+      </div>
+
+      <div class="cat-card">
+        <div class="cat-head"><h3>{{ t('cat_penalties') }}</h3><span class="weight-chip">{{ weights['penalties'] }}%</span></div>
+        <div class="form-grid">
+          {{ stat_input('penalties_faced', match.penalties_faced if match else none) }}
+          {{ stat_input('penalties_saved', match.penalties_saved if match else none) }}
+        </div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="notes">{{ t('notes') }}</label>
+      <textarea id="notes" name="notes" rows="3">{{ match.notes if match and match.notes else '' }}</textarea>
+    </div>
+  </section>
+
+  <div class="form-actions">
+    <button class="btn btn-primary" type="submit">{{ t('save') }}</button>
+    <a class="btn btn-ghost" href="{{ url_for('matches_list') }}">{{ t('cancel') }}</a>
+  </div>
+</form>
+{% endblock %}

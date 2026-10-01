@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% set active_page = 'dashboard' %}
+{% from "_macros.html" import ring, score_chip, avatar with context %}
+
+{% block title %}{{ t('dashboard_title') }} · {{ app_name }}{% endblock %}
+
+{% block content %}
+<section class="hero card">
+  <div class="hero-main">
+    <img class="hero-logo" src="{{ club_logo }}" alt="Club logo">
+    <div>
+      <h1>{{ t('dashboard_title') }}</h1>
+      <p class="muted">{{ t('app_tagline') }}</p>
+    </div>
+  </div>
+  <a class="btn btn-primary" href="{{ url_for('match_new') }}">+ {{ t('new_match') }}</a>
+</section>
+
+<section class="stat-row">
+  <div class="card stat-card">
+    <span class="stat-value">{{ goalkeepers | length }}</span>
+    <span class="stat-label">{{ t('stat_goalkeepers') }}</span>
+  </div>
+  <div class="card stat-card">
+    <span class="stat-value">{{ summary.count }}</span>
+    <span class="stat-label">{{ t('stat_matches') }}</span>
+  </div>
+  <div class="card stat-card">
+    <span class="stat-value">{{ summary.average | round(1) if summary.average is not none else '—' }}</span>
+    <span class="stat-label">{{ t('stat_avg') }}</span>
+  </div>
+</section>
+
+<div class="grid grid-2">
+  <section class="card">
+    <h2>{{ t('recent_matches') }}</h2>
+    {% if recent %}
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>{{ t('date') }}</th>
+            <th>{{ t('goalkeeper') }}</th>
+            <th>{{ t('opponent') }}</th>
+            <th>{{ t('score') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for m in recent %}
+          <tr>
+            <td>{{ m.match_date }}</td>
+            <td><a href="{{ url_for('goalkeeper_detail', gid=m.goalkeeper_id) }}">{{ m.first_name }} {{ m.last_name }}</a></td>
+            <td>{{ m.opponent or '—' }}</td>
+            <td><a href="{{ url_for('match_result', mid=m.id) }}">{{ score_chip(m.overall_score) }}</a></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+      <p class="empty">{{ t('no_matches') }}</p>
+    {% endif %}
+  </section>
+
+  <section class="card">
+    <h2>{{ t('ranking') }}</h2>
+    {% if ranking %}
+      <ul class="ranking">
+        {% for g in ranking %}
+        <li>
+          {{ avatar(g, 48) }}
+          <div class="ranking-info">
+            <a href="{{ url_for('goalkeeper_detail', gid=g.id) }}">{{ g.first_name }} {{ g.last_name }}</a>
+            <span class="muted">{{ g.match_count }} {{ t('matches_evaluated') | lower }}</span>
+          </div>
+          {{ ring(g.avg_score, 58, 6, g.avg_score | score_color) }}
+        </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="empty">{{ t('no_goalkeepers') }}</p>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

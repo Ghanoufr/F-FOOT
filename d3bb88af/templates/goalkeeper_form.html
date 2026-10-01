@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% set active_page = 'goalkeepers' %}
+
+{% block title %}{{ t('edit_goalkeeper') if goalkeeper else t('new_goalkeeper') }} · {{ app_name }}{% endblock %}
+
+{% block content %}
+<section class="page-head">
+  <h1>{{ t('edit_goalkeeper') if goalkeeper else t('new_goalkeeper') }}</h1>
+  <a class="btn btn-ghost" href="{{ url_for('goalkeepers_list') }}">{{ t('cancel') }}</a>
+</section>
+
+<form class="card form-card" method="post" enctype="multipart/form-data"
+      action="{{ url_for('goalkeeper_edit', gid=goalkeeper.id) if goalkeeper else url_for('goalkeeper_new') }}">
+  <div class="form-grid">
+    <div class="field">
+      <label for="first_name">{{ t('first_name') }} *</label>
+      <input id="first_name" type="text" name="first_name" required
+             value="{{ goalkeeper.first_name if goalkeeper else '' }}">
+    </div>
+    <div class="field">
+      <label for="last_name">{{ t('last_name') }} *</label>
+      <input id="last_name" type="text" name="last_name" required
+             value="{{ goalkeeper.last_name if goalkeeper else '' }}">
+    </div>
+    <div class="field">
+      <label for="birth_date">{{ t('birth_date') }}</label>
+      <input id="birth_date" type="date" name="birth_date"
+             value="{{ goalkeeper.birth_date if goalkeeper and goalkeeper.birth_date else '' }}">
+    </div>
+    <div class="field">
+      <label for="nationality">{{ t('nationality') }}</label>
+      <input id="nationality" type="text" name="nationality"
+             value="{{ goalkeeper.nationality if goalkeeper and goalkeeper.nationality else '' }}">
+    </div>
+    <div class="field">
+      <label for="jersey_number">{{ t('jersey_number') }}</label>
+      <input id="jersey_number" type="number" name="jersey_number" min="1" max="99"
+             value="{{ goalkeeper.jersey_number if goalkeeper and goalkeeper.jersey_number is not none else '' }}">
+    </div>
+    <div class="field">
+      <label for="photo">{{ t('photo') }}</label>
+      <input id="photo" type="file" name="photo" accept="image/*">
+      <small class="muted">{{ t('photo_hint') }}</small>
+    </div>
+  </div>
+  <div class="form-actions">
+    <button class="btn btn-primary" type="submit">{{ t('save') }}</button>
+    <a class="btn btn-ghost" href="{{ url_for('goalkeepers_list') }}">{{ t('cancel') }}</a>
+  </div>
+</form>
+{% endblock %}

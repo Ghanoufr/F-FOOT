@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% set active_page = 'goalkeepers' %}
+{% from "_macros.html" import avatar, score_chip with context %}
+
+{% block title %}{{ t('goalkeepers_title') }} · {{ app_name }}{% endblock %}
+
+{% block content %}
+<section class="page-head">
+  <h1>{{ t('goalkeepers_title') }}</h1>
+  <a class="btn btn-primary" href="{{ url_for('goalkeeper_new') }}">+ {{ t('add_goalkeeper') }}</a>
+</section>
+
+{% if goalkeepers %}
+<div class="grid grid-3">
+  {% for g in goalkeepers %}
+  <div class="card gk-card">
+    <div class="gk-head">
+      {{ avatar(g, 64) }}
+      <div>
+        <h3><a href="{{ url_for('goalkeeper_detail', gid=g.id) }}">{{ g.first_name }} {{ g.last_name }}</a></h3>
+        <p class="muted">
+          {% if g.jersey_number is not none %}#{{ g.jersey_number }}{% endif %}
+          {% if g.nationality %}{{ ' · ' if g.jersey_number is not none }}{{ g.nationality }}{% endif %}
+        </p>
+      </div>
+    </div>
+    <div class="gk-stats">
+      <div><span class="gk-stat-value">{{ g.match_count }}</span><span class="muted">{{ t('matches_evaluated') }}</span></div>
+      <div><span class="gk-stat-value">{{ g.avg_score | round(1) if g.avg_score is not none else '—' }}</span><span class="muted">{{ t('avg_score_label') }}</span></div>
+    </div>
+    <div class="row-actions">
+      <a class="btn btn-ghost btn-sm" href="{{ url_for('goalkeeper_detail', gid=g.id) }}">{{ t('view') }}</a>
+      <a class="btn btn-ghost btn-sm" href="{{ url_for('goalkeeper_edit', gid=g.id) }}">{{ t('edit') }}</a>
+      <form method="post" action="{{ url_for('goalkeeper_delete', gid=g.id) }}" data-confirm="{{ t('confirm_delete') }}">
+        <button class="btn btn-danger btn-sm" type="submit">{{ t('delete') }}</button>
+      </form>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="card">
+  <p class="empty">{{ t('no_goalkeepers') }}</p>
+  <p class="center"><a class="btn btn-primary" href="{{ url_for('goalkeeper_new') }}">+ {{ t('add_goalkeeper') }}</a></p>
+</div>
+{% endif %}
+{% endblock %}

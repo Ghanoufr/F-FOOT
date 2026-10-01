@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% set active_page = 'club' %}
+
+{% block title %}{{ t('club_title') }} · {{ app_name }}{% endblock %}
+
+{% block content %}
+<section class="page-head">
+  <h1>{{ t('club_title') }}</h1>
+</section>
+
+<form class="card form-card" method="post" enctype="multipart/form-data" action="{{ url_for('club_settings') }}">
+  <div class="club-grid">
+    <div class="club-logo-preview">
+      <img src="{{ club_logo }}" alt="Club logo">
+      <span class="muted">{{ t('club_logo') }}</span>
+    </div>
+    <div class="club-fields">
+      <div class="field">
+        <label for="name_fr">{{ t('club_name_fr') }}</label>
+        <input id="name_fr" type="text" name="name_fr" value="{{ club.name_fr or '' }}">
+      </div>
+      <div class="field">
+        <label for="name_ar">{{ t('club_name_ar') }}</label>
+        <input id="name_ar" type="text" name="name_ar" value="{{ club.name_ar or '' }}">
+      </div>
+      <div class="field">
+        <label for="logo">{{ t('upload_logo') }}</label>
+        <input id="logo" type="file" name="logo" accept="image/*">
+        <small class="muted">{{ t('logo_hint') }}</small>
+      </div>
+    </div>
+  </div>
+  <div class="form-actions">
+    <button class="btn btn-primary" type="submit">{{ t('save') }}</button>
+  </div>
+</form>
+{% endblock %}

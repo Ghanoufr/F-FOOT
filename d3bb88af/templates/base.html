@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="{{ lang }}" dir="{{ 'rtl' if is_rtl else 'ltr' }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ app_name }}{% endblock %}</title>
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/club_logo.png') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="{{ url_for('index') }}">
+    <img class="brand-logo" src="{{ club_logo }}" alt="Club logo">
+    <span class="brand-text">
+      <strong class="brand-name">{{ app_name }}</strong>
+      <span class="brand-tagline">{{ t('app_tagline') }}</span>
+    </span>
+  </a>
+  <nav class="nav">
+    <a href="{{ url_for('index') }}" class="{{ 'active' if active_page == 'dashboard' }}">{{ t('nav_dashboard') }}</a>
+    <a href="{{ url_for('goalkeepers_list') }}" class="{{ 'active' if active_page == 'goalkeepers' }}">{{ t('nav_goalkeepers') }}</a>
+    <a href="{{ url_for('matches_list') }}" class="{{ 'active' if active_page == 'matches' }}">{{ t('nav_matches') }}</a>
+    <a class="nav-cta" href="{{ url_for('match_new') }}">+ {{ t('nav_new_match') }}</a>
+    <a href="{{ url_for('club_settings') }}" class="{{ 'active' if active_page == 'club' }}">{{ t('nav_club') }}</a>
+  </nav>
+  <div class="lang-switch" role="group" aria-label="Language">
+    <a href="{{ url_for('set_language', code='fr') }}" class="{{ 'active' if lang == 'fr' }}">FR</a>
+    <a href="{{ url_for('set_language', code='ar') }}" class="{{ 'active' if lang == 'ar' }}">ع</a>
+  </div>
+</header>
+
+<main class="container">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flashes">
+        {% for category, message in messages %}
+          <div class="flash flash-{{ category }}">{{ t(message) }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+  {% block content %}{% endblock %}
+</main>
+
+<footer class="footer">
+  <span>{{ app_name }} · {{ current_year }}</span>
+  {% set club_name = club.get('name_fr') if lang == 'fr' else club.get('name_ar') %}
+  {% if club_name %}<span class="footer-club">{{ club_name }}</span>{% endif %}
+</footer>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

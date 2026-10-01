@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% set active_page = 'matches' %}
+{% from "_macros.html" import score_chip with context %}
+
+{% block title %}{{ t('matches_title') }} · {{ app_name }}{% endblock %}
+
+{% block content %}
+<section class="page-head">
+  <h1>{{ t('matches_title') }}</h1>
+  <div class="row-actions">
+    <form class="filter-form" method="get" action="{{ url_for('matches_list') }}">
+      <select name="goalkeeper_id" onchange="this.form.submit()">
+        <option value="">{{ t('all_goalkeepers') }}</option>
+        {% for g in goalkeepers %}
+          <option value="{{ g.id }}" {{ 'selected' if selected_goalkeeper == g.id }}>{{ g.first_name }} {{ g.last_name }}</option>
+        {% endfor %}
+      </select>
+    </form>
+    <a class="btn btn-primary" href="{{ url_for('match_new') }}">+ {{ t('new_match') }}</a>
+  </div>
+</section>
+
+<section class="card">
+  {% if matches %}
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>{{ t('date') }}</th>
+          <th>{{ t('goalkeeper') }}</th>
+          <th>{{ t('opponent') }}</th>
+          <th>{{ t('competition') }}</th>
+          <th>{{ t('venue') }}</th>
+          <th>{{ t('score') }}</th>
+          <th>{{ t('actions') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in matches %}
+        <tr>
+          <td>{{ m.match_date }}</td>
+          <td><a href="{{ url_for('goalkeeper_detail', gid=m.goalkeeper_id) }}">{{ m.first_name }} {{ m.last_name }}</a></td>
+          <td>{{ m.opponent or '—' }}</td>
+          <td>{{ m.competition or '—' }}</td>
+          <td>{{ t('venue_home') if m.venue == 'home' else t('venue_away') }}</td>
+          <td>{{ score_chip(m.overall_score) }}</td>
+          <td class="cell-actions">
+            <a class="btn btn-ghost btn-sm" href="{{ url_for('match_result', mid=m.id) }}">{{ t('view') }}</a>
+            <a class="btn btn-ghost btn-sm" href="{{ url_for('match_edit', mid=m.id) }}">{{ t('edit') }}</a>
+            <form method="post" action="{{ url_for('match_delete', mid=m.id) }}" data-confirm="{{ t('confirm_delete') }}">
+              <button class="btn btn-danger btn-sm" type="submit">{{ t('delete') }}</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <p class="empty">{{ t('no_matches') }}</p>
+  {% endif %}
+</section>
+{% endblock %}

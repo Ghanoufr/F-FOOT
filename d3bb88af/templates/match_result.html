@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% set active_page = 'matches' %}
+{% from "_macros.html" import ring, rating_badge with context %}
+
+{% block title %}{{ t('match_result_title') }} · {{ app_name }}{% endblock %}
+
+{% block content %}
+<section class="page-head">
+  <h1>{{ t('match_result_title') }}</h1>
+  <div class="row-actions">
+    <a class="btn btn-ghost" href="{{ url_for('matches_list') }}">{{ t('back') }}</a>
+    <a class="btn btn-ghost" href="{{ url_for('match_edit', mid=match.id) }}">{{ t('edit') }}</a>
+    <form method="post" action="{{ url_for('match_delete', mid=match.id) }}" data-confirm="{{ t('confirm_delete') }}">
+      <button class="btn btn-danger" type="submit">{{ t('delete') }}</button>
+    </form>
+  </div>
+</section>
+
+<section class="card match-head-card">
+  <div class="match-head-info">
+    <h2>{{ match.first_name }} {{ match.last_name }}</h2>
+    <p class="muted">
+      {{ match.match_date }}
+      {% if match.opponent %} · {{ t('opponent') }}: {{ match.opponent }}{% endif %}
+      {% if match.competition %} · {{ match.competition }}{% endif %}
+      · {{ t('venue_home') if match.venue == 'home' else t('venue_away') }}
+    </p>
+    {% if match.notes %}<p class="notes">{{ match.notes }}</p>{% endif %}
+  </div>
+</section>
+
+<section class="card overall-card">
+  <div class="overall-ring">
+    {{ ring(result.overall, 190, 16, result.color) }}
+    <span class="muted">{{ t('performance_overall') }}</span>
+  </div>
+  <div class="overall-side">
+    {{ rating_badge(result.rating_key) }}
+    <p class="muted">
+      {{ t('applied_criteria') }}: {{ result.applied_weight }}% —
+      {{ result.categories | selectattr('applicable') | list | length }} / {{ result.categories | length }} {{ t('criterion') | lower }}
+    </p>
+    <div class="mini-summary">
+      <span>{{ t('saves') }}: <strong>{{ match.saves }}</strong></span>
+      <span>{{ t('goals_conceded') }}: <strong>{{ match.goals_conceded }}</strong></span>
+      <span>{{ t('duels_won') }}: <strong>{{ match.duels_won }}</strong></span>
+      <span>{{ t('crosses_successful') }}: <strong>{{ match.crosses_successful }}</strong></span>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2 class="section-title">{{ t('details') }}</h2>
+  <div class="grid grid-3">
+    {% for cat in result.categories %}
+    <div class="card cat-card {{ '' if cat.applicable else 'cat-na' }}">
+      <div class="cat-head">
+        <h3>{{ t('cat_' + cat.key) }}</h3>
+        <span class="weight-chip">{{ t('weight') }} {{ cat.weight }}%</span>
+      </div>
+      {% if cat.applicable %}
+        <div class="cat-body">
+          {{ ring(cat.score, 92, 9, cat.score | score_color) }}
+          <div class="cat-meta">
+            <span class="cat-detail">{{ cat.detail }}</span>
+            <span class="muted">{{ t('score_label') }}</span>
+          </div>
+        </div>
+      {% else %}
+        <p class="muted cat-none">{{ t('not_applicable') }}</p>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="card formula-card">
+  <h2>{{ t('formula_title') }}</h2>
+  <p class="muted">{{ t('formula_text') }}</p>
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>{{ t('criterion') }}</th>
+          <th>{{ t('weight') }}</th>
+          <th>{{ t('score_label') }}</th>
+          <th>{{ t('details') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for cat in result.categories %}
+        <tr class="{{ '' if cat.applicable else 'row-na' }}">
+          <td>{{ t('cat_' + cat.key) }}</td>
+          <td>{{ cat.weight }}%</td>
+          <td>
+            {% if cat.applicable %}
+              <span class="chip chip-{{ cat.score | rating_of }}">{{ cat.score | round(1) }}%</span>
+            {% else %}
+              <span class="muted">{{ t('not_applicable') }}</span>
+            {% endif %}
+          </td>
+          <td>{{ cat.detail }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

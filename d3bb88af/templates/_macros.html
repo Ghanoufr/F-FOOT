@@ -1,0 +1,42 @@
+{% macro ring(pct, size=120, stroke=11, color='#22c55e', text=None) -%}
+  {%- set radius = (size - stroke) / 2 -%}
+  {%- set circumference = 2 * 3.14159265 * radius -%}
+  {%- set offset = circumference * (1 - (pct / 100)) -%}
+  <svg class="ring" width="{{ size }}" height="{{ size }}" viewBox="0 0 {{ size }} {{ size }}" role="img">
+    <circle cx="{{ size / 2 }}" cy="{{ size / 2 }}" r="{{ radius }}" fill="none"
+            stroke="var(--ring-track)" stroke-width="{{ stroke }}"/>
+    <circle cx="{{ size / 2 }}" cy="{{ size / 2 }}" r="{{ radius }}" fill="none"
+            stroke="{{ color }}" stroke-width="{{ stroke }}" stroke-linecap="round"
+            stroke-dasharray="{{ circumference | round(2) }}"
+            stroke-dashoffset="{{ offset | round(2) }}"
+            transform="rotate(-90 {{ size / 2 }} {{ size / 2 }})"/>
+    <text x="{{ size / 2 }}" y="{{ size / 2 }}" text-anchor="middle" dominant-baseline="central"
+          class="ring-value" style="font-size: {{ (size * 0.26) | round(0) | int }}px">
+      {{ text if text is not none else (pct | round(0) | int) ~ '%' }}
+    </text>
+  </svg>
+{%- endmacro %}
+
+{% macro rating_badge(key) -%}
+  <span class="badge badge-{{ key }}">{{ t('rating_' + key) }}</span>
+{%- endmacro %}
+
+{% macro score_chip(score) -%}
+  {% if score is not none %}
+    <span class="chip chip-{{ score | rating_of }}">{{ score | round(1) }}%</span>
+  {% else %}
+    <span class="muted">—</span>
+  {% endif %}
+{%- endmacro %}
+
+{% macro avatar(person, size=56) -%}
+  {% if person.photo %}
+    <img class="avatar" style="width: {{ size }}px; height: {{ size }}px;"
+         src="{{ url_for('static', filename=person.photo) }}"
+         alt="{{ person.first_name }} {{ person.last_name }}">
+  {% else %}
+    <span class="avatar avatar-initials" style="width: {{ size }}px; height: {{ size }}px; font-size: {{ (size * 0.36) | round(0) | int }}px;">
+      {{ (person.first_name or '?')[0] }}{{ (person.last_name or '')[0] }}
+    </span>
+  {% endif %}
+{%- endmacro %}
